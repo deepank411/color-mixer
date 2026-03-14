@@ -101,6 +101,13 @@
       <span id="settings-arrow" class="arrow">&#9654;</span>
     </div>
     <div id="settings-body">
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:0.85rem; color:var(--text-dim); margin-bottom:0.5rem;">Cement Type</div>
+        <div class="mode-toggle">
+          <button id="cement-white" class="active" onclick="setCementType('white')">White Cement</button>
+          <button id="cement-grey" onclick="setCementType('grey')">Grey Cement</button>
+        </div>
+      </div>
       <div class="setting-row">
         <label>Max Pigment %</label>
         <input type="range" id="max-load-slider" min="5" max="50" value="30" oninput="updateMaxLoad(this.value)">
@@ -110,7 +117,7 @@
       <div id="pigment-calibration"></div>
       <div style="margin-top:1rem;">
         <div class="setting-row">
-          <label>White Cement</label>
+          <label id="cal-cement-label">White Cement</label>
           <input type="color" id="cal-white" value="#ebe6dc" oninput="updateCalibration()">
           <span class="rgb-display" id="cal-white-rgb">235, 230, 220</span>
         </div>

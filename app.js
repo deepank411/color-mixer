@@ -9,7 +9,12 @@ const PIGMENTS = [
   { name: 'Yellow', rgb: [200, 175, 45],  color: '#c8af2d' },  // Bayferrox 4920 goethite
 ];
 
-let WHITE_CEMENT = [235, 230, 220];
+const CEMENT_PRESETS = {
+  white: { name: 'White Cement', rgb: [235, 230, 220], hex: '#ebe6dc' },
+  grey:  { name: 'Grey Cement',  rgb: [150, 148, 144], hex: '#969490' },
+};
+let cementType = 'white';
+let WHITE_CEMENT = CEMENT_PRESETS.white.rgb.slice();
 let MAX_PIGMENT_LOAD = 30;
 
 // State
@@ -613,7 +618,7 @@ function updateRecipeDisplay() {
   wRow.className = 'pigment-row';
   wRow.innerHTML = `
     <div class="pigment-swatch" style="background:rgb(${WHITE_CEMENT[0]},${WHITE_CEMENT[1]},${WHITE_CEMENT[2]});border:1px solid #555"></div>
-    <div class="pigment-name" style="width:auto">White Cement</div>
+    <div class="pigment-name" style="width:auto">${CEMENT_PRESETS[cementType].name}</div>
     <div class="pigment-bar-wrap" style="flex:1">
       <div class="pigment-bar" style="width:100%;background:rgb(${WHITE_CEMENT[0]},${WHITE_CEMENT[1]},${WHITE_CEMENT[2]});opacity:0.5"></div>
     </div>
@@ -742,7 +747,7 @@ function copyRecipe() {
     `Target Color: ${rgbToHex(targetColor)}`,
     `Recipe:`,
     ...PIGMENTS.map((p, i) => `  ${p.name.padEnd(8)} ${currentRecipe[i].toFixed(1)}%`),
-    `  White Cement: ${whitePercent.toFixed(1)}%`,
+    `  ${CEMENT_PRESETS[cementType].name}: ${whitePercent.toFixed(1)}%`,
     `Total Pigment: ${totalPigment.toFixed(1)}%`,
     `Match Quality: ΔE ${de.toFixed(1)} (${quality})`,
   ];
@@ -782,6 +787,31 @@ function updateMaxLoad(val) {
   }
 }
 
+function setCementType(type) {
+  cementType = type;
+  const preset = CEMENT_PRESETS[type];
+  WHITE_CEMENT = preset.rgb.slice();
+
+  // Update toggle buttons
+  document.getElementById('cement-white').classList.toggle('active', type === 'white');
+  document.getElementById('cement-grey').classList.toggle('active', type === 'grey');
+
+  // Sync the calibration color picker and RGB display
+  document.getElementById('cal-white').value = rgbToHex(WHITE_CEMENT);
+  document.getElementById('cal-white-rgb').textContent = `${WHITE_CEMENT[0]}, ${WHITE_CEMENT[1]}, ${WHITE_CEMENT[2]}`;
+
+  // Update label on calibration row
+  document.getElementById('cal-cement-label').textContent = preset.name;
+
+  // Recompute recipe if a target is selected
+  if (targetColor) {
+    autoRecipe = optimizeRecipe(rgbToLab(targetColor));
+    currentRecipe = autoRecipe.slice();
+    updateRecipeDisplay();
+    updateTuningSliders();
+  }
+}
+
 function buildCalibrationUI() {
   const container = document.getElementById('pigment-calibration');
   container.innerHTML = '';
@@ -814,6 +844,8 @@ function updateCalibration() {
   }
   const whiteHex = document.getElementById('cal-white').value;
   WHITE_CEMENT = hexToRgb(whiteHex);
+  CEMENT_PRESETS[cementType].rgb = WHITE_CEMENT.slice();
+  CEMENT_PRESETS[cementType].hex = whiteHex;
   document.getElementById('cal-white-rgb').textContent = `${WHITE_CEMENT[0]}, ${WHITE_CEMENT[1]}, ${WHITE_CEMENT[2]}`;
 
   // Recompute if we have a target
